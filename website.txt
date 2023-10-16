@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ArduinoCountdownTimer</title>
+</head>
+
+<body>
+<h1> <font color="#483D8B"> <center> Arduino Countdown Timer </center> </font> </h1>
+<br>
+
+<center><img src="1.jpg" width="600px" height="450px"></center>
+<br>
+<br>
+
+<img src="https://cdn-icons-png.flaticon.com/512/1144/1144760.png" width="40px" height="40px">
+<a href="team.html"  target="_blank">สมาชิกผู้จัดทำ</a>
+<br>
+<br>
+<br>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ตัวจับเวลาคือนาฬิกาประเภทหนึ่งที่ใช้สำหรับการวัดช่วงเวลา ตัวจับเวลามีสองประเภท คือหนึ่งนับจากศูนย์ สำหรับการวัดเวลาที่ผ่านไป เรียกว่า<b>นาฬิกาจับเวลา</b> และสองนับถอยหลังจากระยะเวลาที่กำหนดโดยผู้ใช้ โดยทั่วไปเรียกว่า<b>ตัวจับเวลาถอยหลัง</b></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ในบทช่วยสอนนี้ เราจะแสดงวิธีสร้าง<b>ตัวจับเวลาถอยหลังโดยใช้ Arduino</b> ในที่นี้เราไม่ได้ใช้โมดูลนาฬิกาเรียลไทม์ (RTC) เพื่อรับเวลา ผู้ใช้เป็นผู้กำหนดระยะเวลาโดยใช้ปุ่มกดและจอ LCD ขนาด 16x2 และเมื่อตัวจับเวลาถึงศูนย์ เสียงเตือนจะดังขึ้นด้วยความช่วยเหลือของ Buzzer</p>
+
+<h2> <font color="#483D8B"> Material Required </font> </h2>
+<p><font size="3"> ◉ Arduino UNO 
+<br> ◉ LCD 16*2 
+<br> ◉ 4*4 matrix keypad 
+<br> ◉ Buzzer 
+<br> ◉ Pushbutton 
+<br> ◉ Potentiometer (10k) 
+<br> ◉ Resistor (10k, 100ohm x2)
+<br> ◉ Connecting wires </font></p><br>
+
+<h2> <font color="#483D8B"> Arduino Countdown Timer Circuit Diagram </font> </h2>
+<center><img src="2.jpg" width="600px" height="450px"></center>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ใช้ Arduino Uno เป็นตัวควบคุมหลัก ปุ่มกดใช้สำหรับป้อนระยะเวลาและใช้จอ LCD 16*2 เพื่อแสดงการนับถอยหลัง ปุ่มกดใช้เพื่อเริ่มเวลา ตรวจสอบที่นี่วิธีการเชื่อมต่อปุ่มกด 4x4 กับ Arduino และ LCD 16x2 กับ Arduino</p><br>
+
+
+<h2> <font color="#483D8B"> Arduino Countdown Timer Code and Explanation </font> </h2>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>การทำงานของ Arduino Countdown Timer</b> นี้เรียบง่าย แต่โค้ดซับซ้อนเล็กน้อย ในตอนแรกมันจะพิมพ์ “Arduino Timer” บนจอ LCD จนกว่าคุณจะกดปุ่ม ทันทีที่คุณกดปุ่ม เครื่องจะขอให้ป้อนระยะเวลานับถอยหลังโดยเรียกใช้ฟังก์ชัน "setFeedingTime" จากนั้นคุณสามารถป้อนระยะเวลาด้วยปุ่มกดKeypad จากนั้นคุณจะต้องกด 'D' เพื่อบันทึกเวลาและเริ่มจับเวลาถอยหลัง ในฟังก์ชัน void loop() เราได้ทำการคำนวณบางอย่างเพื่อลดเวลาวินาทีต่อวินาที และเพื่อแสดงค่าที่เหมาะสมของชั่วโมง นาที และวินาที (HH:MM:SS) ตามเวลาที่เหลือ</p>
+<center><img src="3.jpg" width="600px" height="450px"></center>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;เมื่อตัวจับเวลาถึงศูนย์ เสียงสัญญาณจะเริ่มส่งเสียงบี๊บและไฟLEDจะกะพริบ เสียงบี๊บจะดัง 100 ครั้งเท่านั้น (ตามรหัส) หากต้องการหยุดเสียงกริ่ง ให้กดปุ่มค้างไว้ คุณสามารถใช้ปุ่มกดได้ตลอดเวลาเพื่อหยุดตัวจับเวลาระหว่างการนับ</p>
+<center><img src="4.jpg" width="600px" height="450px"></center>
+<br>
+<br>
+
+<h2> <font color="#483D8B"> Code</font> </h2>
+
+<div align="left" style="color:#483D8B"><div css="pet" style="letter-spacing: 0.4px; width: 700px; height: 600px; overflow: auto; border: 1px solid;">
+
+// Arduino Countdown Timer Code<br>
+
+
+#include <LiquidCrystal.h><br>
+
+#include <Keypad.h><br>
+
+
+const byte ROWS = 4; // Four rows<br>
+
+const byte COLS = 4; // Three columns<br>
+
+
+long int set1;<br>
+
+long int set2;<br>
+
+long int set3;<br>
+
+long int set4;<br>
+
+long int j;<br>
+
+
+String hours;<br>
+
+String minutes;<br>
+
+String seconds;<br>
+
+// Define the Keymap<br>
+
+
+char keys[ROWS][COLS] = {<br>
+
+
+  {'1','2','3','A'},<br>
+
+
+  {'4','5','6','B'},<br>
+
+
+  {'7','8','9','C'},<br>
+
+
+  {'*','0','#','D'}<br>
+
+
+};<br>
+
+
+byte rowPins[ROWS] = { 6, 7, 8, 9 };// Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins<br>
+
+byte colPins[COLS] = { 10, 11, 12, 13 };// Connect keypad COL0, COL1 and COL2 to t<br>
+
+
+Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );<br>
+
+
+
+LiquidCrystal lcd(A0, A1, 5, 4, 3, 2); // Creates an LC object. Parameters: (rs, enable, d4, d5, d6, d7)<br>
+
+
+ int t1, t2, t3, t4, t5, t6;<br>
+
+ int r1, r2, r3;<br>
+
+ 
+
+boolean feed = true; // condition for alarm<br>
+
+
+ char key;<br>
+
+ String r[8];<br>
+
+
+ void setFeedingTime()<br>
+
+{<br>
+
+  feed = true;<br>
+
+   int i=0;<br>
+
+
+  lcd.clear();<br>
+
+  lcd.setCursor(0,0);<br>
+
+  lcd.print("Set feeding Time");<br>
+
+  lcd.clear();<br>
+
+  lcd.print("HH:MM:SS");<br>
+
+  lcd.setCursor(0,1);<br>
+
+
+  
+
+  while(1){<br>
+
+    key = kpd.getKey();<br>
+
+
+    char j;<br>
+
+    
+
+  if(key!=NO_KEY){<br>
+
+    
+
+    lcd.setCursor(j,1);<br>
+
+    
+
+    lcd.print(key);<br>
+
+    
+
+    r[i] = key-48;<br>
+
+    i++;<br>
+
+    j++;<br>
+
+
+    if (j==2 || j == 5)<br>
+
+    {<br>
+
+      lcd.print(":"); j++;<br>
+
+    }<br>
+
+    delay(500);<br>
+
+  }<br>
+
+
+  if (key == 'D')<br>
+
+  {key=0; break; }<br>
+
+  }<br>
+
+ lcd.clear();<br>
+
+}<br>
+
+ 
+
+ void setup() <br>
+
+ { <br>
+
+  lcd.begin(16,2);<br>
+
+  Serial.begin(9600);<br>
+
+  pinMode(A0, OUTPUT);<br>
+
+  pinMode(A1, OUTPUT);<br>
+
+  pinMode(A3, INPUT);<br>
+
+  pinMode(A4, OUTPUT);<br>
+
+ } <br>
+
+ 
+
+ void loop() <br>
+
+ { <br>
+
+      lcd.setCursor(0,0);<br>
+
+      lcd.print("Arduino Timer");<br>
+
+      //Serial.println(A3);<br>
+
+
+      if (digitalRead(A3)==1) //<br>
+
+      {<br>
+
+      lcd.clear();<br>
+
+      setFeedingTime(); <br>
+
+      for(int i = 0; i < 6; i++)  // this for loop is used to get the value of the feeding time and print it serially
+
+   <br>   {<br>
+
+       Serial.print(r[i]);<br>
+
+       Serial.println();<br>
+
+      }<br>
+
+      
+
+   <br>hours = String (r[0]) + String (r[1]) ; //combining two separate int values of r[0] and r[1] into one string and save it to "hours" 
+
+   <br>minutes = String (r[2]) + String (r[3]) ;  //combining two separate int values of r[2] and r[3] into one string and save it to "minutes" 
+
+   <br>seconds = String (r[4]) + String (r[5]) ;  //combining two separate int values of r[4] and r[5] into one string and save it to "seconds" 
+
+
+  
+
+  <br>set1 = (hours.toInt()*3600); //converting hours into seconds
+
+ <br> set2 = (minutes.toInt() * 60);  //converting minutes into seconds
+
+ <br> set3 = seconds.toInt();
+
+  <br>set4 = (hours.toInt() * 3600)+ (minutes.toInt() * 60) + seconds.toInt(); //adding set1, set2 and set3 together in set4
+
+  <br>Serial.print("set4");
+
+  <br>Serial.print(set4);
+
+ <br> Serial.println();
+
+
+  <br>lcd.setCursor(0,0);
+
+  <br>lcd.print("Countdown begins");
+
+ <br> delay(1000);
+
+ <br> lcd.clear();
+
+  
+
+ <br> for(long int j = set4; j >= 0; j--) // this for loopis used to decrease the total time in seconds
+
+ <br> {
+
+  <br>Serial.println(j);
+
+  
+
+ <br> lcd.setCursor(0,0);
+
+ <br> lcd.print("HH:MM:SS");
+
+  
+
+  <br>long int HH = j / 3600; // converting the remaining time into remaining hours
+
+  <br>lcd.setCursor(0,1);
+
+ <br> Serial.println(HH);
+
+  <br>if (HH < 10) { lcd.print('0');  }
+
+ <br> lcd.print(HH);
+
+ <br> lcd.print(":");
+
+  
+
+  <br>long int MM = (j - (HH*3600))/60 ; //converting the remaining time into remaining minutes
+
+<br>  lcd.setCursor(3,1);
+
+ <br> Serial.println(MM);
+
+  <br>if (MM < 10) { lcd.print('0');  }
+
+ <br> lcd.print(MM);
+
+ <br> lcd.print(":");
+
+  
+
+  <br>long int SS = j - ((HH*3600)+(MM*60)); //converting the remaining time into remaining seconds
+
+ <br> lcd.setCursor(6,1);
+
+  <br>Serial.println(SS);
+
+  <br>if (SS < 10) { lcd.print('0');  } 
+
+ <br> lcd.print(SS);
+
+  <br>delay(1000);
+
+
+ <br> if (digitalRead(A3)==1){break;} 
+
+
+   <br>if (j == 0)
+
+    
+
+    <br>{
+
+     <br> lcd.clear();
+
+     <br> lcd.setCursor(0,0);
+
+     <br> lcd.print("Timer Stop");
+
+      <br>lcd.setCursor(2,1);
+
+      <br>lcd.print("-Ring-Ring-");
+
+      
+
+   <br> for(int k =0; k<= 100; k++) //this for loop is used for the buzzer to beep 100 time as the timer reaches zero
+
+    <br>  {
+
+       <br> digitalWrite(A4,HIGH);
+
+        <br>delay(300);
+
+       <br> digitalWrite(A4,LOW);  
+
+       <br> delay(300); 
+
+       <br> if (digitalRead(A3)==1){break;}  
+
+      <br>}
+
+    <br>}
+
+   <br>}
+
+  <br>}
+
+<br>}       
+</div>
+<br><br>
+
+<a href="https://circuitdigest.com/microcontroller-projects/arduino-countdown-timer?fbclid=IwAR1wDwP_dRG0AX8aBz5IP-FI2eRv4ic2DXoPTvqeDMamz1BW6EEJ52h4wvU"  target="_blank">แหล่งอ้างอิง</a>
+<br><br>
+<br><br> 
+
+<center><img src="https://cdn-icons-png.flaticon.com/512/633/633151.png" width="400px" height="400px"></center>
+
+</body>
+</html>
